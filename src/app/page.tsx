@@ -36,7 +36,9 @@ export default function Home() {
     uso: 'PARTICULAR',
     pasajeros: '2',
     cilindros: '0',
-    sucursal: 'OFICINA LIBERTAD',
+    sucursal: 'OFICINA PRINCIPAL - LA GUAIRA',
+    tipo_carga: '150',
+    toneladas: 'N/A',
     vigencia_desde: new Date().toISOString().split('T')[0],
   });
 
@@ -180,6 +182,12 @@ export default function Home() {
                   <Input label="Cédula de Identidad" name="cedula_tomador" value={formData.cedula_tomador} onChange={handleChange} placeholder="V-12345678" />
                   <Input label="Teléfono" name="telefono_tomador" value={formData.telefono_tomador} onChange={handleChange} placeholder="0414..." />
                   <Input label="Correo" name="email" type="email" value={formData.email} onChange={handleChange} placeholder="usuario@gmail.com" />
+                  <div className="space-y-2">
+                    <label className="text-slate-400 text-sm font-semibold ml-1">Entidad (Estado)</label>
+                    <select name="entidad" value={formData.entidad} onChange={handleChange} className="w-full bg-slate-950/50 border border-slate-800 rounded-2xl p-4 focus:border-blue-500 outline-none transition-colors appearance-none">
+                      {["AMAZONAS", "ANZOATEGUI", "APURE", "ARAGUA", "BARINAS", "BOLIVAR", "CARABOBO", "COJEDES", "DELTA AMACURO", "DISTRITO CAPITAL", "FALCON", "GUARICO", "LARA", "MERIDA", "MIRANDA", "MONAGAS", "NUEVA ESPARTA", "PORTUGUESA", "SUCRE", "TACHIRA", "TRUJILLO", "LA GUAIRA", "YARACUY", "ZULIA"].map(estado => <option key={estado} value={estado}>{estado}</option>)}
+                    </select>
+                  </div>
                   <div className="md:col-span-2 space-y-2">
                     <label className="text-slate-400 text-sm font-semibold ml-1">Dirección Completa</label>
                     <textarea 
@@ -207,9 +215,11 @@ export default function Home() {
                       <option>CARGA</option>
                     </select>
                   </div>
-                  <div className="md:col-span-2">
-                    <Input label="Serial Chasis" name="serie_carroceria" value={formData.serie_carroceria} onChange={handleChange} />
-                  </div>
+                  <Input label="Tipo" name="tipo" value={formData.tipo} onChange={handleChange} placeholder="Ej: MOTOCICLETA" />
+                  <Input label="Pasajeros" name="pasajeros" type="number" value={formData.pasajeros} onChange={handleChange} />
+                  <Input label="Tipo de Carga" name="tipo_carga" value={formData.tipo_carga} onChange={handleChange} placeholder="Ej: 150" />
+                  <Input label="Toneladas" name="toneladas" value={formData.toneladas} onChange={handleChange} placeholder="Ej: N/A" />
+                  <Input label="Serial Chasis" name="serie_carroceria" value={formData.serie_carroceria} onChange={handleChange} />
                   <Input label="Serial Motor" name="serie_motor" value={formData.serie_motor} onChange={handleChange} />
                 </div>
               )}

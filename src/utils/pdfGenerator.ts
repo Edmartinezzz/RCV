@@ -158,8 +158,8 @@ function drawPage1(doc: jsPDF, data: any, qrDataUrl: string, vigDesde: string, v
     { label: "CANT. PASAJEROS:", value: data.pasajeros || "2", w: 32 },
     { label: "CONDUCTOR:", value: "PROPIETARIO", w: 32 },
     { label: "AYUDANTES:", value: "0", w: 28 },
-    { label: "TIPO DE CARGA:", value: "150", w: 28 },
-    { label: "TONELADAS:", value: "N/A", w: W - 22 - 20 - 32 - 32 - 28 - 28 },
+    { label: "TIPO DE CARGA:", value: data.tipo_carga || "150", w: 28 },
+    { label: "TONELADAS:", value: data.toneladas || "N/A", w: W - 22 - 20 - 32 - 32 - 28 - 28 },
   ]);
 
   // ── SECTION: SUB-RAMO / COBERTURAS ───────────────────────────────────────────
