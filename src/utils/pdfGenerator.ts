@@ -10,7 +10,9 @@ export async function generateRCVPDF(data: any): Promise<Blob> {
     "https://joqpapropcfajdgqwodw.supabase.co";
   const fileName = `rcv_${data.poliza_no.replace("-", "_")}.pdf`;
   const publicUrl = `${supabaseUrl}/storage/v1/object/public/rcv_policies/${fileName}`;
-  const qrDataUrl = await QRCode.toDataURL(publicUrl, { margin: 1, width: 200 });
+  // Al agregar el parametro ?download, los navegadores fuerzan la descarga del archivo al escanear
+  const dowloadUrl = `${publicUrl}?download=${fileName}`;
+  const qrDataUrl = await QRCode.toDataURL(dowloadUrl, { margin: 1, width: 200 });
 
   // Compute vigencia hasta (1 year after vigencia_desde)
   const desde = new Date(data.vigencia_desde);
