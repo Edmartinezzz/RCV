@@ -9,52 +9,46 @@ export async function generateRCVPDF(data: any): Promise<Blob> {
     process.env.NEXT_PUBLIC_SUPABASE_URL ||
     "https://joqpapropcfajdgqwodw.supabase.co";
   // --- LÓGICA DE VERIFICACIÓN OFFLINE ULTRA-COMPRIMIDA ---
-  // Usamos un array en orden fijo para ahorrar muchísimo espacio en el QR
+  // Limitamos la longitud de los textos para que el QR sea escaneable
+  const limit = (str: string, max: number) => (str || "").substring(0, max).toUpperCase();
+
   const compactData = [
-    data.nombres_tomador,    // 0
-    data.cedula_tomador,     // 1
-    data.placa,              // 2
-    data.marca,              // 3
-    data.modelo,             // 4
-    data.ano,                // 5
-    data.color,              // 6
-    data.vigencia_desde,     // 7
-    data.poliza_no,          // 8
-    data.recibo_no,          // 9
-    data.fecha_emision,      // 10
-    data.sucursal,           // 11
-    data.uso,                // 12
-    data.tipo,               // 13
-    data.pasajeros,          // 14
-    data.serie_motor,        // 15
-    data.serie_carroceria,   // 16
-    data.clase,              // 17
-    data.cilindros,          // 18
-    data.tipo_carga,         // 19
-    data.toneladas,          // 20
-    data.domicilio_tomador,  // 21
-    data.telefono_tomador,   // 22
-    data.email               // 23
+    limit(data.nombres_tomador, 25), // 0
+    limit(data.cedula_tomador, 15),  // 1
+    limit(data.placa, 10),           // 2
+    limit(data.marca, 15),           // 3
+    limit(data.modelo, 15),          // 4
+    limit(data.ano, 4),              // 5
+    limit(data.color, 10),           // 6
+    limit(data.vigencia_desde, 10),  // 7
+    limit(data.poliza_no, 15),       // 8
+    limit(data.recibo_no, 15),       // 9
+    limit(data.fecha_emision, 10),   // 10
+    limit(data.sucursal, 15),        // 11
+    limit(data.uso, 12),             // 12
+    limit(data.tipo, 12),            // 13
+    limit(data.pasajeros, 2),        // 14
+    limit(data.serie_motor, 20),     // 15
+    limit(data.serie_carroceria, 20),// 16
+    limit(data.clase, 15),           // 17
+    limit(data.cilindros, 2),        // 18
+    limit(data.tipo_carga, 10),      // 19
+    limit(data.toneladas, 5),        // 20
+    limit(data.domicilio_tomador, 30)// 21
   ];
 
-  // Convertimos a JSON -> Base64 (UTF-8 Safe) compatible con Browser y Node
+  // Convertimos a JSON -> Base64 (UTF-8 Safe)
   const jsonStr = JSON.stringify(compactData);
-  let encodedData = "";
-  if (typeof btoa !== 'undefined') {
-    encodedData = btoa(encodeURIComponent(jsonStr).replace(/%([0-9A-F]{2})/g, (_, p1) => 
-      String.fromCharCode(parseInt(p1, 16))
-    ));
-  } else {
-    encodedData = Buffer.from(encodeURIComponent(jsonStr).replace(/%([0-9A-F]{2})/g, (_, p1) => 
-      String.fromCharCode(parseInt(p1, 16))
-    ), 'binary').toString('base64');
-  }
-  encodedData = encodedData.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  const encodedData = btoa(unescape(encodeURIComponent(jsonStr)))
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_')
+    .replace(/=+$/, '');
 
   const origin = typeof window !== "undefined" ? window.location.origin : "https://rcv-premium.vercel.app";
   const verifyUrl = `${origin}/v?d=${encodedData}`;
   
-  const qrDataUrl = await QRCode.toDataURL(verifyUrl, { margin: 1, width: 300, errorCorrectionLevel: 'L' });
+  // Nivel de error 'L' para mínima densidad de puntos
+  const qrDataUrl = await QRCode.toDataURL(verifyUrl, { margin: 1, width: 250, errorCorrectionLevel: 'L' });
 
   // Compute vigencia hasta (1 year after vigencia_desde)
   const desde = new Date(data.vigencia_desde);
