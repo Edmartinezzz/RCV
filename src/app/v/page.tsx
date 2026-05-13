@@ -1,15 +1,21 @@
 "use client";
 
-import { useEffect, Suspense } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { generateRCVPDF } from '@/utils/pdfGenerator';
+import { Download, ShieldCheck, Loader2 } from 'lucide-react';
 
-function MinimalDownload() {
+function SimpleDownload() {
   const searchParams = useSearchParams();
+  const [policy, setPolicy] = useState<any>(null);
+  const [error, setError] = useState(false);
 
   useEffect(() => {
     const dataEncoded = searchParams.get('d');
-    if (!dataEncoded) return;
+    if (!dataEncoded) {
+      setError(true);
+      return;
+    }
 
     try {
       const normalized = dataEncoded.replace(/-/g, '+').replace(/_/g, '/');
@@ -19,7 +25,7 @@ function MinimalDownload() {
       const jsonStr = decodeURIComponent(Array.from(bytes).map(b => '%' + b.toString(16).padStart(2, '0')).join(''));
       const decoded = JSON.parse(jsonStr);
 
-      const policy = {
+      setPolicy({
         nombres_tomador: decoded[0],
         cedula_tomador: decoded[1],
         placa: decoded[2],
@@ -41,52 +47,64 @@ function MinimalDownload() {
         cilindros: decoded[18],
         tipo_carga: decoded[19],
         toneladas: decoded[20]
-      };
-
-      const trigger = async () => {
-        const pdfBlob = await generateRCVPDF(policy);
-        const url = URL.createObjectURL(pdfBlob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `RCV_${policy.placa}_${policy.poliza_no}.pdf`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        // Opcional: cerrar o avisar que terminó
-        setTimeout(() => {
-          document.title = "Descarga Completada";
-        }, 1000);
-      };
-
-      trigger();
+      });
     } catch (e) {
-      console.error("Error en descarga directa");
+      setError(true);
     }
   }, [searchParams]);
 
+  const handleDownload = async () => {
+    if (!policy) return;
+    try {
+      const pdfBlob = await generateRCVPDF(policy);
+      const url = URL.createObjectURL(pdfBlob);
+      
+      // En móviles, a veces es mejor abrir en pestaña nueva o usar este método
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `RCV_${policy.placa}.pdf`;
+      link.target = "_blank";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      alert("Error al generar el archivo.");
+    }
+  };
+
+  if (error) return <div className="min-h-screen bg-black text-red-500 flex items-center justify-center p-6 text-center font-bold">CÓDIGO QR INVÁLIDO</div>;
+  if (!policy) return <div className="min-h-screen bg-black text-white flex items-center justify-center"><Loader2 className="animate-spin" /></div>;
+
   return (
-    <div style={{ 
-      backgroundColor: '#000', 
-      color: '#444', 
-      height: '100vh', 
-      display: 'flex', 
-      alignItems: 'center', 
-      justifyContent: 'center',
-      fontFamily: 'sans-serif',
-      fontSize: '12px',
-      textTransform: 'uppercase',
-      letterSpacing: '2px'
-    }}>
-      Iniciando Descarga...
-    </div>
+    <main className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-6">
+      <div className="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-[2rem] p-8 text-center shadow-2xl">
+        <div className="w-20 h-20 bg-emerald-500/10 text-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6">
+          <ShieldCheck size={40} />
+        </div>
+        
+        <h1 className="text-white text-xl font-bold mb-2 uppercase tracking-tight">Póliza Verificada</h1>
+        <p className="text-slate-400 text-sm mb-8">La información de la placa <span className="text-emerald-400 font-mono font-bold">{policy.placa}</span> es correcta.</p>
+
+        <button 
+          onClick={handleDownload}
+          className="w-full py-5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl font-black flex items-center justify-center gap-3 transition-all active:scale-95 shadow-lg shadow-emerald-900/20"
+        >
+          <Download size={24} />
+          DESCARGAR PDF
+        </button>
+        
+        <p className="mt-6 text-slate-500 text-[10px] font-bold uppercase tracking-widest">
+          Sistema Oficial de Verificación
+        </p>
+      </div>
+    </main>
   );
 }
 
 export default function Page() {
   return (
     <Suspense fallback={null}>
-      <MinimalDownload />
+      <SimpleDownload />
     </Suspense>
   );
 }
