@@ -8,44 +8,41 @@ export async function generateRCVPDF(data: any): Promise<Blob> {
   const supabaseUrl =
     process.env.NEXT_PUBLIC_SUPABASE_URL ||
     "https://joqpapropcfajdgqwodw.supabase.co";
-  const fileName = `rcv_${data.poliza_no.replace("-", "_")}.pdf`;
-  
-  // --- LÓGICA DE VERIFICACIÓN OFFLINE ---
-  // Codificamos los datos esenciales en un objeto pequeño para el QR
-  const shortData = {
-    nt: data.nombres_tomador,
-    ct: data.cedula_tomador,
-    pl: data.placa,
-    ma: data.marca,
-    mo: data.modelo,
-    an: data.ano,
-    co: data.color,
-    vd: data.vigencia_desde,
-    pn: data.poliza_no,
-    rn: data.recibo_no,
-    fe: data.fecha_emision,
-    su: data.sucursal,
-    us: data.uso,
-    ti: data.tipo,
-    pa: data.pasajeros,
-    sm: data.serie_motor,
-    sc: data.serie_carroceria,
-    cl: data.clase,
-    ci: data.cilindros,
-    tc: data.tipo_carga,
-    to: data.toneladas
-  };
+  // --- LÓGICA DE VERIFICACIÓN OFFLINE ULTRA-COMPRIMIDA ---
+  // Usamos un array en orden fijo para ahorrar muchísimo espacio en el QR
+  const compactData = [
+    data.nombres_tomador,    // 0
+    data.cedula_tomador,     // 1
+    data.placa,              // 2
+    data.marca,              // 3
+    data.modelo,             // 4
+    data.ano,                // 5
+    data.color,              // 6
+    data.vigencia_desde,     // 7
+    data.poliza_no,          // 8
+    data.recibo_no,          // 9
+    data.fecha_emision,      // 10
+    data.sucursal,           // 11
+    data.uso,                // 12
+    data.tipo,               // 13
+    data.pasajeros,          // 14
+    data.serie_motor,        // 15
+    data.serie_carroceria,   // 16
+    data.clase,              // 17
+    data.cilindros,          // 18
+    data.tipo_carga,         // 19
+    data.toneladas           // 20
+  ];
 
-  // Convertimos a JSON -> Base64 (UTF-8 Safe)
-  const jsonStr = JSON.stringify(shortData);
+  const jsonStr = JSON.stringify(compactData);
   const encodedData = btoa(encodeURIComponent(jsonStr).replace(/%([0-9A-F]{2})/g, (_, p1) => 
     String.fromCharCode(parseInt(p1, 16))
   )).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 
   const origin = typeof window !== "undefined" ? window.location.origin : "https://rcv-premium.vercel.app";
-  const verifyUrl = `${origin}/verify/offline?d=${encodedData}`;
+  const verifyUrl = `${origin}/v?d=${encodedData}`;
   
-  // Aumentamos un poco el tamaño y bajamos el nivel de error para que sea más fácil de escanear si hay mucha data
+  // Con esta compresión, el QR será muy simple y fácil de leer
   const qrDataUrl = await QRCode.toDataURL(verifyUrl, { margin: 1, width: 300, errorCorrectionLevel: 'L' });
 
   // Compute vigencia hasta (1 year after vigencia_desde)
