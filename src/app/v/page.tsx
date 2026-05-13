@@ -75,8 +75,8 @@ function AutoDownloadContent() {
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
-    } catch (err) {
-      alert("Error al generar el PDF. Intente de nuevo.");
+    } catch (err: any) {
+      alert("Error técnico: " + (err.message || err));
     }
   };
 
