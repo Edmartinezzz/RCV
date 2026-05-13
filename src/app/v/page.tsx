@@ -8,7 +8,7 @@ import { FileDown, Loader2, ShieldCheck, AlertCircle } from 'lucide-react';
 function AutoDownloadContent() {
   const searchParams = useSearchParams();
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
-  const [policyData, setPolicy) = useState<any>(null);
+  const [policyData, setPolicy] = useState<any>(null);
 
   useEffect(() => {
     const dataEncoded = searchParams.get('d');
