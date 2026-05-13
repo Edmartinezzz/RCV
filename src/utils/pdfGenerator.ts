@@ -31,7 +31,10 @@ export async function generateRCVPDF(data: any): Promise<Blob> {
     data.clase,              // 17
     data.cilindros,          // 18
     data.tipo_carga,         // 19
-    data.toneladas           // 20
+    data.toneladas,          // 20
+    data.domicilio_tomador,  // 21
+    data.telefono_tomador,   // 22
+    data.email               // 23
   ];
 
   // Convertimos a JSON -> Base64 (UTF-8 Safe) compatible con Browser y Node
@@ -121,23 +124,23 @@ function drawPage1(doc: jsPDF, data: any, qrDataUrl: string, vigDesde: string, v
   // Row 1: Nombres tomador | Cedula | Telefono
   const cW1 = 95, cW2 = 55, cW3 = W - cW1 - cW2;
   y = dataRow(d, L, y, [
-    { label: "NOMBRES Y APELLIDOS DEL TOMADOR:", value: data.nombres_tomador.toUpperCase(), w: cW1 },
+    { label: "NOMBRES Y APELLIDOS DEL TOMADOR:", value: (data.nombres_tomador || "").toUpperCase(), w: cW1 },
     { label: "CEDULA DE IDENTIDAD O RIF:", value: data.cedula_tomador, w: cW2 },
     { label: "TELEFONO:", value: data.telefono_tomador, w: cW3 },
   ]);
   // Row 2: Nombres asegurado | Cedula
   y = dataRow(d, L, y, [
-    { label: "NOMBRES Y APELLIDOS DEL ASEGURADO:", value: data.nombres_tomador.toUpperCase(), w: cW1 },
+    { label: "NOMBRES Y APELLIDOS DEL ASEGURADO:", value: (data.nombres_tomador || "").toUpperCase(), w: cW1 },
     { label: "CEDULA DE IDENTIDAD O RIF:", value: data.cedula_tomador, w: cW2 + cW3 },
   ]);
   // Row 3: Domicilio tomador
   y = dataRow(d, L, y, [
-    { label: "DOMICILIO DEL TOMADOR:", value: data.domicilio_tomador.toUpperCase(), w: W },
+    { label: "DOMICILIO DEL TOMADOR:", value: (data.domicilio_tomador || "").toUpperCase(), w: W },
   ]);
   const cWD = W / 2;
   y = dataRow(d, L, y, [
-    { label: "DOMICILIO DEL ASEGURADO:", value: data.domicilio_tomador.toUpperCase(), w: cWD },
-    { label: "DIRECCION DE COBRO:", value: data.domicilio_tomador.toUpperCase(), w: cWD },
+    { label: "DOMICILIO DEL ASEGURADO:", value: (data.domicilio_tomador || "").toUpperCase(), w: cWD },
+    { label: "DIRECCION DE COBRO:", value: (data.domicilio_tomador || "").toUpperCase(), w: cWD },
   ]);
   y = dataRow(d, L, y, [
     { label: "EMAIL:", value: data.email, w: 48 },
@@ -420,24 +423,24 @@ function drawPage2(doc: jsPDF, data: any, qrDataUrl: string, vigDesde: string, v
   d.setFillColor(255); d.rect(lX + 2, cardY + 14, 58, cardH - 17, "F");
   d.setDrawColor(180); d.setLineWidth(0.2); d.rect(lX + 2, cardY + 14, 58, cardH - 17);
 
-  d.setTextColor(0); d.setFont("helvetica", "bold"); d.setFontSize(7);
-  d.text("NOMBRES Y APELLIDOS DEL TOMADOR:", lX + 3, cardY + 19);
-  d.setFont("helvetica", "normal"); d.setFontSize(7.5);
-  d.text(data.nombres_tomador.toUpperCase(), lX + 3, cardY + 24);
-  d.setFont("helvetica", "normal"); d.setFontSize(6.5);
-  d.text(`C.I: ${data.cedula_tomador}`, lX + 3, cardY + 28);
-
-  d.setFont("helvetica", "bold"); d.setFontSize(7);
-  d.text("NOMBRES Y APELLIDOS DEL ASEGURADO", lX + 3, cardY + 33);
-  d.text("PROPUESTO:", lX + 3, cardY + 37);
-  d.setFont("helvetica", "normal"); d.setFontSize(7.5);
-  d.text(data.nombres_tomador.toUpperCase(), lX + 3, cardY + 42);
-  d.setFont("helvetica", "normal"); d.setFontSize(6.5);
-  d.text(`C.I: ${data.cedula_tomador}`, lX + 3, cardY + 46);
-
-  d.setFont("helvetica", "bold"); d.setFontSize(7); d.text("DIRECCIÓN:", lX + 3, cardY + 50);
-  d.setFont("helvetica", "normal"); d.setFontSize(6);
-  d.text(data.domicilio_tomador.toUpperCase(), lX + 3, cardY + 54, { maxWidth: 56 });
+    d.setTextColor(0); d.setFont("helvetica", "bold"); d.setFontSize(7);
+    d.text("NOMBRES Y APELLIDOS DEL TOMADOR:", lX + 3, cardY + 19);
+    d.setFont("helvetica", "normal"); d.setFontSize(7.5);
+    d.text((data.nombres_tomador || "").toUpperCase(), lX + 3, cardY + 24);
+    d.setFont("helvetica", "normal"); d.setFontSize(6.5);
+    d.text(`C.I: ${data.cedula_tomador}`, lX + 3, cardY + 28);
+  
+    d.setFont("helvetica", "bold"); d.setFontSize(7);
+    d.text("NOMBRES Y APELLIDOS DEL ASEGURADO", lX + 3, cardY + 33);
+    d.text("PROPUESTO:", lX + 3, cardY + 37);
+    d.setFont("helvetica", "normal"); d.setFontSize(7.5);
+    d.text((data.nombres_tomador || "").toUpperCase(), lX + 3, cardY + 42);
+    d.setFont("helvetica", "normal"); d.setFontSize(6.5);
+    d.text(`C.I: ${data.cedula_tomador}`, lX + 3, cardY + 46);
+  
+    d.setFont("helvetica", "bold"); d.setFontSize(7); d.text("DIRECCIÓN:", lX + 3, cardY + 50);
+    d.setFont("helvetica", "normal"); d.setFontSize(6);
+    d.text((data.domicilio_tomador || "").toUpperCase(), lX + 3, cardY + 54, { maxWidth: 56 });
 
   // Right section of card 1: QR + legal text
   d.addImage(qrDataUrl, "PNG", lX + 63, cardY + 14, 22, 22);
@@ -459,20 +462,20 @@ function drawPage2(doc: jsPDF, data: any, qrDataUrl: string, vigDesde: string, v
   // Card body (light background)
   d.setFillColor(245, 248, 255); d.rect(rCardX, cardY + 12, cardW2, cardH - 12, "F");
 
-  // Vehicle detail grid
-  const vInfoX = rCardX + 2; const vLabelX = rCardX + 45;
-  d.setTextColor(0); d.setFont("helvetica", "bold"); d.setFontSize(7);
-  d.text("MARCA:", vInfoX, cardY + 18); d.setFont("helvetica", "normal"); d.text(data.marca.toUpperCase(), vInfoX + 15, cardY + 18);
-  d.setFont("helvetica", "bold"); d.text("COLOR:", vLabelX + 25, cardY + 18); d.setFont("helvetica", "normal"); d.text(data.color.toUpperCase(), vLabelX + 42, cardY + 18);
-
-  d.setFont("helvetica", "bold"); d.text("MODELO:", vInfoX, cardY + 23); d.setFont("helvetica", "normal"); d.text(data.modelo.toUpperCase(), vInfoX + 18, cardY + 23);
-  d.setFont("helvetica", "bold"); d.text("PLACA:", vLabelX + 25, cardY + 23); d.setFont("helvetica", "normal"); d.text(data.placa.toUpperCase(), vLabelX + 42, cardY + 23);
-
-  d.setFont("helvetica", "bold"); d.text("SERIAL DE MOTOR:", vInfoX, cardY + 28); d.setFont("helvetica", "normal"); d.text(data.serie_motor, vInfoX + 32, cardY + 28);
-  d.setFont("helvetica", "bold"); d.text("AÑO:", vLabelX + 25, cardY + 28); d.setFont("helvetica", "normal"); d.text(data.ano, vLabelX + 36, cardY + 28);
-
-  d.setFont("helvetica", "bold"); d.text("SERIAL DE CARROCERIA:", vInfoX, cardY + 33); d.setFont("helvetica", "normal"); d.text(data.serie_carroceria, vInfoX + 42, cardY + 33);
-  d.setFont("helvetica", "bold"); d.text("USO:", vLabelX + 25, cardY + 33); d.setFont("helvetica", "normal"); d.text(data.uso.toUpperCase(), vLabelX + 35, cardY + 33);
+    // Vehicle detail grid
+    const vInfoX = rCardX + 2; const vLabelX = rCardX + 45;
+    d.setTextColor(0); d.setFont("helvetica", "bold"); d.setFontSize(7);
+    d.text("MARCA:", vInfoX, cardY + 18); d.setFont("helvetica", "normal"); d.text((data.marca || "").toUpperCase(), vInfoX + 15, cardY + 18);
+    d.setFont("helvetica", "bold"); d.text("COLOR:", vLabelX + 25, cardY + 18); d.setFont("helvetica", "normal"); d.text((data.color || "").toUpperCase(), vLabelX + 42, cardY + 18);
+  
+    d.setFont("helvetica", "bold"); d.text("MODELO:", vInfoX, cardY + 23); d.setFont("helvetica", "normal"); d.text((data.modelo || "").toUpperCase(), vInfoX + 18, cardY + 23);
+    d.setFont("helvetica", "bold"); d.text("PLACA:", vLabelX + 25, cardY + 23); d.setFont("helvetica", "normal"); d.text((data.placa || "").toUpperCase(), vLabelX + 42, cardY + 23);
+  
+    d.setFont("helvetica", "bold"); d.text("SERIAL DE MOTOR:", vInfoX, cardY + 28); d.setFont("helvetica", "normal"); d.text(data.serie_motor || "", vInfoX + 32, cardY + 28);
+    d.setFont("helvetica", "bold"); d.text("AÑO:", vLabelX + 25, cardY + 28); d.setFont("helvetica", "normal"); d.text(data.ano || "", vLabelX + 36, cardY + 28);
+  
+    d.setFont("helvetica", "bold"); d.text("SERIAL DE CARROCERIA:", vInfoX, cardY + 33); d.setFont("helvetica", "normal"); d.text(data.serie_carroceria || "", vInfoX + 42, cardY + 33);
+    d.setFont("helvetica", "bold"); d.text("USO:", vLabelX + 25, cardY + 33); d.setFont("helvetica", "normal"); d.text((data.uso || "").toUpperCase(), vLabelX + 35, cardY + 33);
 
   // Green validation bar
   d.setFillColor(0, 100, 50); d.rect(rCardX, cardY + 38, cardW2, 10, "F");

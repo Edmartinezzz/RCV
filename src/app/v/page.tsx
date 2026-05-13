@@ -46,7 +46,11 @@ function AutoDownloadContent() {
         clase: decoded[17],
         cilindros: decoded[18],
         tipo_carga: decoded[19],
-        toneladas: decoded[20]
+        toneladas: decoded[20],
+        // Campos adicionales que podrían faltar
+        domicilio_tomador: decoded[21] || "",
+        telefono_tomador: decoded[22] || "",
+        email: decoded[23] || ""
       };
 
       setPolicy(policy);
