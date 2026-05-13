@@ -36,12 +36,17 @@ export async function generateRCVPDF(data: any): Promise<Blob> {
     to: data.toneladas
   };
 
-  // Convertimos a JSON -> Base64 (usando btoa seguro para URL)
-  const encodedData = btoa(JSON.stringify(shortData)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-  const origin = typeof window !== "undefined" ? window.location.origin : "https://tu-dominio.com";
+  // Convertimos a JSON -> Base64 (UTF-8 Safe)
+  const jsonStr = JSON.stringify(shortData);
+  const encodedData = btoa(encodeURIComponent(jsonStr).replace(/%([0-9A-F]{2})/g, (_, p1) => 
+    String.fromCharCode(parseInt(p1, 16))
+  )).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+
+  const origin = typeof window !== "undefined" ? window.location.origin : "https://rcv-premium.vercel.app";
   const verifyUrl = `${origin}/verify/offline?d=${encodedData}`;
   
-  const qrDataUrl = await QRCode.toDataURL(verifyUrl, { margin: 1, width: 250, errorCorrectionLevel: 'M' });
+  // Aumentamos un poco el tamaño y bajamos el nivel de error para que sea más fácil de escanear si hay mucha data
+  const qrDataUrl = await QRCode.toDataURL(verifyUrl, { margin: 1, width: 300, errorCorrectionLevel: 'L' });
 
   // Compute vigencia hasta (1 year after vigencia_desde)
   const desde = new Date(data.vigencia_desde);

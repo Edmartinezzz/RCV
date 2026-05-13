@@ -16,9 +16,13 @@ function OfflineVerifyContent() {
     const dataEncoded = searchParams.get('d');
     if (dataEncoded) {
       try {
-        // Decode Base64 safely
+        // Decode Base64 UTF-8 Safe
         const normalized = dataEncoded.replace(/-/g, '+').replace(/_/g, '/');
-        const decoded = JSON.parse(atob(normalized));
+        const binary = atob(normalized);
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+        const jsonStr = decodeURIComponent(Array.from(bytes).map(b => '%' + b.toString(16).padStart(2, '0')).join(''));
+        const decoded = JSON.parse(jsonStr);
         
         // Map back to full keys
         const fullData = {
