@@ -12,12 +12,9 @@ export async function GET(request: NextRequest) {
   try {
     // Decodificar Base64 UTF-8 Safe (Server Side)
     const normalized = dataEncoded.replace(/-/g, '+').replace(/_/g, '/');
+    const binary = Buffer.from(normalized, 'base64').toString('binary');
     const jsonStr = decodeURIComponent(
-      Buffer.from(normalized, 'base64')
-        .toString('binary')
-        .split('')
-        .map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
-        .join('')
+      binary.split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join('')
     );
     const decoded = JSON.parse(jsonStr);
 

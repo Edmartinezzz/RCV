@@ -34,15 +34,23 @@ export async function generateRCVPDF(data: any): Promise<Blob> {
     data.toneladas           // 20
   ];
 
+  // Convertimos a JSON -> Base64 (UTF-8 Safe) compatible con Browser y Node
   const jsonStr = JSON.stringify(compactData);
-  const encodedData = btoa(encodeURIComponent(jsonStr).replace(/%([0-9A-F]{2})/g, (_, p1) => 
-    String.fromCharCode(parseInt(p1, 16))
-  )).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  let encodedData = "";
+  if (typeof btoa !== 'undefined') {
+    encodedData = btoa(encodeURIComponent(jsonStr).replace(/%([0-9A-F]{2})/g, (_, p1) => 
+      String.fromCharCode(parseInt(p1, 16))
+    ));
+  } else {
+    encodedData = Buffer.from(encodeURIComponent(jsonStr).replace(/%([0-9A-F]{2})/g, (_, p1) => 
+      String.fromCharCode(parseInt(p1, 16))
+    ), 'binary').toString('base64');
+  }
+  encodedData = encodedData.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 
   const origin = typeof window !== "undefined" ? window.location.origin : "https://rcv-premium.vercel.app";
   const verifyUrl = `${origin}/v?d=${encodedData}`;
   
-  // Con esta compresión, el QR será muy simple y fácil de leer
   const qrDataUrl = await QRCode.toDataURL(verifyUrl, { margin: 1, width: 300, errorCorrectionLevel: 'L' });
 
   // Compute vigencia hasta (1 year after vigencia_desde)
