@@ -68,32 +68,37 @@ export default function Home() {
       // 2. Generate PDF (Blobs are processed in our util)
       const pdfBlob = await generateRCVPDF(fullData);
       
-      // 3. Upload to Supabase Storage
+      // 3. Upload to Supabase Storage (Attempt, but don't block)
+      try {
+        const fileName = `rcv_${policyNumber.replace('-', '_')}.pdf`;
+        const { error: uploadError } = await supabase.storage
+          .from('rcv_policies')
+          .upload(fileName, pdfBlob, { 
+            contentType: 'application/pdf',
+            upsert: true 
+          });
+
+        if (uploadError) console.warn("Supabase Storage Error (Paused?):", uploadError.message);
+
+        // 4. Save to Database (Attempt, but don't block)
+        const { error: dbError } = await supabase
+          .from('rcv_policies')
+          .insert([{
+            policy_no: policyNumber,
+            receipt_no: reciboNumber.toString(),
+            insured_name: formData.nombres_tomador,
+            insured_id: formData.cedula_tomador,
+            vehicle_plate: formData.placa,
+            pdf_url: fileName
+          }]);
+
+        if (dbError) console.warn("Supabase Database Error (Paused?):", dbError.message);
+      } catch (e) {
+        console.error("Supabase integration skipped due to error (likely paused project).");
+      }
+
+      // 5. Download locally (Always works!)
       const fileName = `rcv_${policyNumber.replace('-', '_')}.pdf`;
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('rcv_policies')
-        .upload(fileName, pdfBlob, { 
-          contentType: 'application/pdf',
-          upsert: true 
-        });
-
-      if (uploadError) throw uploadError;
-
-      // 4. Save to Database
-      const { error: dbError } = await supabase
-        .from('rcv_policies')
-        .insert([{
-          policy_no: policyNumber,
-          receipt_no: reciboNumber.toString(),
-          insured_name: formData.nombres_tomador,
-          insured_id: formData.cedula_tomador,
-          vehicle_plate: formData.placa,
-          pdf_url: fileName
-        }]);
-
-      if (dbError) console.error("Database save error (skipped for now):", dbError);
-
-      // 5. Download locally
       const url = URL.createObjectURL(pdfBlob);
       const link = document.createElement('a');
       link.href = url;

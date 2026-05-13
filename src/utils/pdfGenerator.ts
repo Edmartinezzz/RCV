@@ -9,10 +9,39 @@ export async function generateRCVPDF(data: any): Promise<Blob> {
     process.env.NEXT_PUBLIC_SUPABASE_URL ||
     "https://joqpapropcfajdgqwodw.supabase.co";
   const fileName = `rcv_${data.poliza_no.replace("-", "_")}.pdf`;
-  const publicUrl = `${supabaseUrl}/storage/v1/object/public/rcv_policies/${fileName}`;
-  // Al agregar el parametro ?download, los navegadores fuerzan la descarga del archivo al escanear
-  const dowloadUrl = `${publicUrl}?download=${fileName}`;
-  const qrDataUrl = await QRCode.toDataURL(dowloadUrl, { margin: 1, width: 200 });
+  
+  // --- LÓGICA DE VERIFICACIÓN OFFLINE ---
+  // Codificamos los datos esenciales en un objeto pequeño para el QR
+  const shortData = {
+    nt: data.nombres_tomador,
+    ct: data.cedula_tomador,
+    pl: data.placa,
+    ma: data.marca,
+    mo: data.modelo,
+    an: data.ano,
+    co: data.color,
+    vd: data.vigencia_desde,
+    pn: data.poliza_no,
+    rn: data.recibo_no,
+    fe: data.fecha_emision,
+    su: data.sucursal,
+    us: data.uso,
+    ti: data.tipo,
+    pa: data.pasajeros,
+    sm: data.serie_motor,
+    sc: data.serie_carroceria,
+    cl: data.clase,
+    ci: data.cilindros,
+    tc: data.tipo_carga,
+    to: data.toneladas
+  };
+
+  // Convertimos a JSON -> Base64 (usando btoa seguro para URL)
+  const encodedData = btoa(JSON.stringify(shortData)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  const origin = typeof window !== "undefined" ? window.location.origin : "https://tu-dominio.com";
+  const verifyUrl = `${origin}/verify/offline?d=${encodedData}`;
+  
+  const qrDataUrl = await QRCode.toDataURL(verifyUrl, { margin: 1, width: 250, errorCorrectionLevel: 'M' });
 
   // Compute vigencia hasta (1 year after vigencia_desde)
   const desde = new Date(data.vigencia_desde);
