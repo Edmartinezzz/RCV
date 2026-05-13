@@ -54,8 +54,8 @@ export async function GET(request: NextRequest) {
         'Content-Disposition': `attachment; filename="RCV_${policy.placa}.pdf"`,
       },
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error generating PDF on server:", error);
-    return new NextResponse("Error generando el certificado", { status: 500 });
+    return new NextResponse(`Error detallado: ${error.message || error}`, { status: 500 });
   }
 }
